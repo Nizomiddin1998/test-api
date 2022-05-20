@@ -1,0 +1,10 @@
+.select-control{
+  padding: 10px;
+}
+button{
+  padding: 10px;
+  background-color: green;
+  color: white;
+  border-radius: 0;
+  border-color: green;
+}
