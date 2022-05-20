@@ -5,15 +5,17 @@ import { Table, TableBody, TableContainer, THead, Wrapper } from './style';
 
 function Tables() {
     const [information, setInformation] = useState({ loading: false, error: false, success: false, data: null })
-    const [selectId, setSelectId] = useState('')
-    const [disabled, setDisabled] = useState(false)
+    const [value, setValue] = useState('')
+    const [disabled, setDisabled] = useState(true)
     function changeSelect(event) {
-        setSelectId(event.target.value);
+        
+        setValue(event.target.value);
     }
-    function onSubmit() {
+    function onSubmit(event) {
+        event.preventDefault()
         setDisabled(true)
         try {
-            doGetPayment(`/kadastr/${selectId}/`, setInformation)
+            doGetPayment(`/kadastr/${value}/`, setInformation)
         } catch (e) {
             console.log(e);
         } 
@@ -24,29 +26,21 @@ function Tables() {
       }
     }, [information])
     
+    useEffect(() => {    
+        if (value.length>8) {
+            setDisabled(false)
+        } else setDisabled(true) 
+    }, [value])
+    
     
     return (
         <div>
             <Wrapper>
-                <div>
-                    <select className='select-control' defaultValue={'10'} onChange={changeSelect}>
-                        <option value="10">Тошкент шахри</option>
-                        <option value="11">Тошкент вилояти</option>
-                        <option value="12">Сирдарё вилояти</option>
-                        <option value="13">Жиззах вилояти</option>
-                        <option value="14">Самарқанд вилояти</option>
-                        <option value="15">Фарғона вилояти</option>
-                        <option value="16">Наманган вилояти</option>
-                        <option value="17">Андижон вилояти</option>
-                        <option value="18">Қашқадарё вилояти</option>
-                        <option value="19">Сурхондарё вилояти</option>
-                        <option value="20">Бухоро вилояти</option>
-                        <option value="21">Навоий вилояти</option>
-                        <option value="22">Хоразм вилояти</option>
-                        <option value="23">Қорақалпоғистон республик</option> 
-                    </select>
-                    <button onClick={onSubmit} disabled={disabled}>Submit</button>
-                </div>
+                <form style={{display: 'flex', gap: '20px'}} onSubmit={onSubmit}>
+                    <input type="number" className='select-control' onChange={changeSelect} placeholder='Stir kiriting...' />
+ 
+                    <button type='submit' style={{background: value.length<8 && 'red'}} disabled={disabled}>Submit</button>
+                </form>
                 {information.loading && <ReactLoader propWidth={120} />}
                 {information.error && <h1 style={{ color: 'red' }}>Serverdan malumot kelmadi!!!!</h1>}
                 {
@@ -109,45 +103,49 @@ function Tables() {
                                     </tr>
                                 </THead>
                                 <TableBody>
-                                    <tr  >
-                                        <td>{selectId}</td>
-                                        <td>{information.data?.data?.total_land_area_full_total}</td>
-                                        <td>{information.data?.data?.total_land_area_full_irrigated}</td>
-                                        <td>{information.data?.data?.total_land_area_full_non_irrigated}</td>
-                                        <td>{information.data?.data?.types_of_agricultural_land_total}</td>
-                                        <td>{information.data?.data?.types_of_agricultural_land_irrigated}</td>
-                                        <td>{information.data?.data?.types_of_agricultural_land_non_irrigated}</td>
-                                        <td>{information.data?.data?.cultivated_lands_total}</td>
-                                        <td>{information.data?.data?.cultivated_lands_irrigated}</td>
-                                        <td>{information.data?.data?.cultivated_lands_non_irrigated}</td>
-                                        <td>{information.data?.data?.perennial_trees_total}</td>
-                                        <td>{information.data?.data?.gardens_areas}</td>
-                                        <td>{information.data?.data?.vineyards_areas}</td>
-                                        <td>{information.data?.data?.mulberry_trees_areas}</td>
-                                        <td>{information.data?.data?.othr_perenial_plants_ars}</td>
-                                        <td>{information.data?.data?.perennial_trees_irrigated}</td>
-                                        <td>{information.data?.data?.perennial_trees_non_irrigated}</td>
-                                        <td>{information.data?.data?.gray_lands_total}</td>
-                                        <td>{information.data?.data?.gray_lands_irrigated}</td>
-                                        <td>{information.data?.data?.gray_lands_non_irrigated}</td>
-                                        <td>{information.data?.data?.hayfield_pastures_total}</td>
-                                        <td>{information.data?.data?.hayfield_pastures_irrigated}</td>
-                                        <td>{information.data?.data?.hayfield_pastures_non_irrigated}</td>
-                                        <td>{information.data?.data?.lands_and_horticultural_associations_total}</td>
-                                        <td>{information.data?.data?.lands_and_horticultural_associations_full_irrigated}</td>
-                                        <td>{information.data?.data?.lands_in_reclamation_condition}</td>
-                                        <td>{information.data?.data?.forests_total}</td>
-                                        <td>{information.data?.data?.forests_irrigated}</td>
-                                        <td>{information.data?.data?.shrubbery}</td>
-                                        <td>{information.data?.data?.other_areas}</td>
-                                        <td>{information.data?.data?.lands_and_horticultural_associations_total}</td>
-                                        <td>{information.data?.data?.shelterbelts_areas}</td>
-                                        <td>{information.data?.data?.total_underwater_areas}</td>
-                                        <td>{information.data?.data?.roads_and_trails_areas}</td>
-                                        <td>{information.data?.data?.construction_land_area}</td>
-                                        <td>{information.data?.data?.al_lnd_nusd_agrcultr_ars}</td>
-                                        <td>{information.data?.data?.unused_other_areas}</td>
+                                    {
+                                      information.data?.data?.map((item,index)=><tr  key={index}>
+                                        <td>{value}</td>
+                                        <td>{item.total_land_area_full_total}</td>
+                                        <td>{item.total_land_area_full_irrigated}</td>
+                                        <td>{item.total_land_area_full_non_irrigated}</td>
+                                        <td>{item.types_of_agricultural_land_total}</td>
+                                        <td>{item.types_of_agricultural_land_irrigated}</td>
+                                        <td>{item.types_of_agricultural_land_non_irrigated}</td>
+                                        <td>{item.cultivated_lands_total}</td>
+                                        <td>{item.cultivated_lands_irrigated}</td>
+                                        <td>{item.cultivated_lands_non_irrigated}</td>
+                                        <td>{item.perennial_trees_total}</td>
+                                        <td>{item.gardens_areas}</td>
+                                        <td>{item.vineyards_areas}</td>
+                                        <td>{item.mulberry_trees_areas}</td>
+                                        <td>{item.othr_perenial_plants_ars}</td>
+                                        <td>{item.perennial_trees_irrigated}</td>
+                                        <td>{item.perennial_trees_non_irrigated}</td>
+                                        <td>{item.gray_lands_total}</td>
+                                        <td>{item.gray_lands_irrigated}</td>
+                                        <td>{item.gray_lands_non_irrigated}</td>
+                                        <td>{item.hayfield_pastures_total}</td>
+                                        <td>{item.hayfield_pastures_irrigated}</td>
+                                        <td>{item.hayfield_pastures_non_irrigated}</td>
+                                        <td>{item.lands_and_horticultural_associations_total}</td>
+                                        <td>{item.lands_and_horticultural_associations_full_irrigated}</td>
+                                        <td>{item.lands_in_reclamation_condition}</td>
+                                        <td>{item.forests_total}</td>
+                                        <td>{item.forests_irrigated}</td>
+                                        <td>{item.shrubbery}</td>
+                                        <td>{item.other_areas}</td>
+                                        <td>{item.lands_and_horticultural_associations_total}</td>
+                                        <td>{item.shelterbelts_areas}</td>
+                                        <td>{item.total_underwater_areas}</td>
+                                        <td>{item.roads_and_trails_areas}</td>
+                                        <td>{item.construction_land_area}</td>
+                                        <td>{item.al_lnd_nusd_agrcultr_ars}</td>
+                                        <td>{item.unused_other_areas}</td>
                                     </tr>
+                                      )  
+                                    }
+                                    
                                 </TableBody>
                             </Table>
                         </TableContainer>

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const GlobalUrl = "http://192.168.137.168:8000"
+const GlobalUrl = "http://192.168.43.12:8000"
 // const GlobalUrl = process.env.REACT_APP_API_ROOT
 
  

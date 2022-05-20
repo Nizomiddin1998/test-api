@@ -7,6 +7,7 @@ max-width: 100%;
 overflow-x: scroll !important ;
 box-sizing: border-box;
 display: block;
+margin-top: 20px;
 `
 export const Table = styled.table`
 width: 100%;
