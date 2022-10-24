@@ -68,3 +68,20 @@ export const TableBody = styled.tbody`
         }
     }
 `
+
+export const Main = styled.main`
+display:flex;
+justify-content: center;
+gap: 10px;
+margin: 30px 0;
+button{
+    border: 0;
+    padding: 8px;
+    background-color: red;
+    width: 70px;
+    border-radius: 4px;
+    &.active{
+        background-color: #226A47
+    }
+}
+`

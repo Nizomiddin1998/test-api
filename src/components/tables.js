@@ -1,160 +1,138 @@
-import React, {  useEffect, useState } from 'react';
-import { doGetPayment } from '../services/services';
+import React, { useState } from 'react';
+import { doPost } from '../services/services';
 import ReactLoader from './react-loader/ReactLoader';
-import { Table, TableBody, TableContainer, THead, Wrapper } from './style';
+import { Main, Wrapper } from './style';
+import TableOne from './tables/tableOne';
+import TableThree from './tables/tableThree';
 
 function Tables() {
     const [information, setInformation] = useState({ loading: false, error: false, success: false, data: null })
+    const [information2, setInformation2] = useState({ loading: false, error: false, success: false, data: null })
     const [value, setValue] = useState('')
-    const [disabled, setDisabled] = useState(true)
+    const [changePage, setChangePage] = useState(1)
     function changeSelect(event) {
-        
         setValue(event.target.value);
     }
-    function onSubmit(event) {
-        event.preventDefault()
-        setDisabled(true)
-        try {
-            doGetPayment(`/kadastr/${value}/`, setInformation)
-        } catch (e) {
-            console.log(e);
-        } 
+    function onChangePage(id) {
+        setChangePage(id)
     }
-    useEffect(() => {    
-      if (!information.loading) {
-        setDisabled(false)
-      }
-    }, [information])
-    
-    useEffect(() => {    
-        if (value.length>8) {
-            setDisabled(false)
-        } else setDisabled(true) 
-    }, [value])
-    
-    
+    async function onSubmit(event) {
+        event.preventDefault()
+        const dataForm = new FormData()
+        dataForm.append('year', event.target[0].value)
+        dataForm.append('quarter', event.target[1].value)
+        dataForm.append('tin', value)
+        if (changePage===1) {
+            setInformation(prev => {
+                return {
+                    ...prev,
+                    loading: true,
+                    success: false
+                }
+            })
+            try {
+                const res = await doPost(`/api/f1-form/`, dataForm)
+                setInformation(prev => {
+                    return {
+                        ...prev,
+                        data: res,
+                        success: true,
+                        loading: false
+                    }
+                })
+            } catch (e) {
+                console.log(e);
+                setInformation(prev => {
+                    return {
+                        ...prev,
+                        error: true,
+                        loading: false
+                    }
+                })
+            }
+        }else{
+            setInformation2(prev => {
+                return {
+                    ...prev,
+                    loading: true,
+                    success: false
+                }
+            })
+            try {
+                const res = await doPost(`/api/f2-form/`, dataForm)
+                setInformation2(prev => {
+                    return {
+                        ...prev,
+                        data: res,
+                        success: true,
+                        loading: false
+                    }
+                })
+            } catch (e) {
+                console.log(e);
+                setInformation2(prev => {
+                    return {
+                        ...prev,
+                        error: true,
+                        loading: false
+                    }
+                })
+            }
+        }
+        
+    }
+
+
+    console.log(information)
+    console.log(information2)
     return (
         <div>
             <Wrapper>
-                <form style={{display: 'flex', gap: '20px'}} onSubmit={onSubmit}>
-                    <input type="number" className='select-control' onChange={changeSelect} placeholder='Stir kiriting...' />
- 
-                    <button type='submit' style={{background: value.length<8 && 'red'}} disabled={disabled}>Submit</button>
+                <form style={{ display: 'flex', gap: '20px' }} onSubmit={onSubmit}>
+                    <div className="form-group w-25">
+                        <label htmlFor="year" >Yili</label>
+                        <select name="year" id="year" className='form-select ' required>
+                            <option value={''}>Barchasi</option>
+                            <option value={2020}>2020</option>
+                            <option value={2021}>2021</option>
+                            <option value={2022}>2022</option>
+                        </select>
+                    </div>
+                    <div className="form-group w-25">
+                        <label htmlFor="quarter">Chorak</label>
+                        <select name="quarter" id="quarter" className='form-select'>
+                            <option value={''}>Barchasi</option>
+                            <option value={1}>I Chorak</option>
+                            <option value={2}>II Chorak</option>
+                            <option value={3}>III Chorak</option>
+                            <option value={4}>IV Chorak</option>
+                        </select>
+                    </div>
+                    <div className="form-group w-25">
+                        <label htmlFor="stir">Stir</label>
+                        <input type="number" id='stir' className='form-control'
+                            onChange={changeSelect}
+                            required={true}
+                            value={value}
+                            placeholder='Stir kiriting...' />
+                    </div>
+
+                    <div className="form-group">
+                        <button type='submit' style={{ height: 40, padding: '5px', marginTop: '20px' }}>Submit</button>
+                    </div>
                 </form>
+                <Main >
+                    <button className={changePage === 1 ? 'active' : ''} onClick={() => onChangePage(1)}>F-1</button>
+                    <button className={changePage === 2 ? 'active' : ''} onClick={() => onChangePage(2)}>F-2</button>
+                </Main>
                 {information.loading && <ReactLoader propWidth={120} />}
                 {information.error && <h1 style={{ color: 'red' }}>Serverdan malumot kelmadi!!!!</h1>}
+
                 {
-                    information.success && <>
-                        <TableContainer >
-                            <Table>
-                                <THead>
-                                    <tr>
-                                        <th rowSpan={3}>№</th>
-                                        <th rowSpan={2} colSpan={3}>Умумий ер майдони</th>
-                                        <th rowSpan={2} colSpan={3}>Қишлоқ хўжалиги ер турлари		        </th>
-                                        <th colSpan={16}>шу жумладан:</th>
-                                        <th colSpan={2} rowSpan={2}> Томорка ерлар ва богдорчилик-сабзовот уюшма ерлари</th>
-                                        <th rowSpan={3}>Мелиоратив курилиш холатидаги ерлар</th>
-                                        <th colSpan={2} rowSpan={2}>Ўрмонзорлар</th>
-                                        <th rowSpan={3}>"Бутазорлар"</th>
-                                        <th rowSpan={3} >Бошқа ерлар</th>
-                                        <th rowSpan={3} >Tomorka yerlari</th>
-                                        <th rowSpan={3} >Ixota daraxtzorlari</th>
-                                        <th rowSpan={3} >Suv ostidagi yerlar</th>
-                                        <th rowSpan={3} >Yo'llar, so'qmoqlar va chorva yo'llari</th>
-                                        <th rowSpan={3} >Qurilishlar</th>
-                                        <th rowSpan={3} >Jami Q/X foydalanilmaydigan yerlar</th>
-                                        <th rowSpan={3} >Boshqalar</th>
-                                    </tr>
-                                    <tr>
-                                        <th colSpan={3}>Экин ерлар</th>
-                                        <th colSpan={7}>Куп йиллик дарахтзорлар</th>
-                                        <th colSpan={3}>Бўз ерлар</th>
-                                        <th colSpan={3}>Пичанзор ва яйловлар</th>
-                                    </tr>
-                                    <tr>
-                                        <th>жами</th>
-                                        <th>"суғориладиган"</th>
-                                        <th>лалми</th>
-                                        <th>жами</th>
-                                        <th>"суғориладиган"</th>
-                                        <th>лалми</th>
-                                        <th>жами</th>
-                                        <th>"суғориладиган"</th>
-                                        <th>лалми</th>
-                                        <th>жами</th>
-                                        <th>Bog'lar</th>
-                                        <th>Tutzorlar</th>
-                                        <th>Uzumzorlar</th>
-                                        <th>Boshqa ko'p yillik daraxtlar</th>
-                                        <th>"суғориладиган"</th>
-                                        <th>лалми</th>
-                                        <th>жами</th>
-                                        <th>"суғориладиган"</th>
-                                        <th>лалми</th>
-                                        <th>жами</th>
-                                        <th>"суғориладиган"</th>
-                                        <th>лалми</th>
-                                        <th>жами</th>
-                                        <th>"суғориладиган"</th>
-                                        <th>жами</th>
-                                        <th>"суғориладиган"</th>
-
-                                    </tr>
-                                </THead>
-                                <TableBody>
-                                    {
-                                      information.data?.data?.map((item,index)=><tr  key={index}>
-                                        <td>{value}</td>
-                                        <td>{item.total_land_area_full_total}</td>
-                                        <td>{item.total_land_area_full_irrigated}</td>
-                                        <td>{item.total_land_area_full_non_irrigated}</td>
-                                        <td>{item.types_of_agricultural_land_total}</td>
-                                        <td>{item.types_of_agricultural_land_irrigated}</td>
-                                        <td>{item.types_of_agricultural_land_non_irrigated}</td>
-                                        <td>{item.cultivated_lands_total}</td>
-                                        <td>{item.cultivated_lands_irrigated}</td>
-                                        <td>{item.cultivated_lands_non_irrigated}</td>
-                                        <td>{item.perennial_trees_total}</td>
-                                        <td>{item.gardens_areas}</td>
-                                        <td>{item.vineyards_areas}</td>
-                                        <td>{item.mulberry_trees_areas}</td>
-                                        <td>{item.othr_perenial_plants_ars}</td>
-                                        <td>{item.perennial_trees_irrigated}</td>
-                                        <td>{item.perennial_trees_non_irrigated}</td>
-                                        <td>{item.gray_lands_total}</td>
-                                        <td>{item.gray_lands_irrigated}</td>
-                                        <td>{item.gray_lands_non_irrigated}</td>
-                                        <td>{item.hayfield_pastures_total}</td>
-                                        <td>{item.hayfield_pastures_irrigated}</td>
-                                        <td>{item.hayfield_pastures_non_irrigated}</td>
-                                        <td>{item.lands_and_horticultural_associations_total}</td>
-                                        <td>{item.lands_and_horticultural_associations_full_irrigated}</td>
-                                        <td>{item.lands_in_reclamation_condition}</td>
-                                        <td>{item.forests_total}</td>
-                                        <td>{item.forests_irrigated}</td>
-                                        <td>{item.shrubbery}</td>
-                                        <td>{item.other_areas}</td>
-                                        <td>{item.lands_and_horticultural_associations_total}</td>
-                                        <td>{item.shelterbelts_areas}</td>
-                                        <td>{item.total_underwater_areas}</td>
-                                        <td>{item.roads_and_trails_areas}</td>
-                                        <td>{item.construction_land_area}</td>
-                                        <td>{item.al_lnd_nusd_agrcultr_ars}</td>
-                                        <td>{item.unused_other_areas}</td>
-                                    </tr>
-                                      )  
-                                    }
-                                    
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-
-
-                    </>
-
-
-
+                    changePage === 1 ?
+                        information.success && <TableOne evalutionNames={information?.data?.data} /> :
+                        information2.success && <TableThree evalutionNamesF2={information2?.data?.data} />
+                        
                 }
 
             </Wrapper>
